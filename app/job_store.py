@@ -40,9 +40,9 @@ class JobStore:
         return con
 
     def _configure_connection(self, con: sqlite3.Connection) -> None:
-        # WAL improves concurrent reader/writer behavior across processes.
+        # Use default rollback-journal mode (non-WAL).
         # busy_timeout reduces "database is locked" spikes under contention.
-        con.execute("PRAGMA journal_mode=WAL")
+        con.execute("PRAGMA journal_mode=DELETE")
         con.execute("PRAGMA synchronous=NORMAL")
         con.execute("PRAGMA busy_timeout=5000")
 

@@ -116,7 +116,8 @@ async def run_pipeline(job_id: str, issue_key: str, store: JobStore) -> Dict[str
         rag_chunks=rag_chunks,
     )
 
-    store.audit(job_id, "PROMPT", "LLM prompt built", {
+    print('==== LLM PROMPT ====', prompt)  # TEMP
+    store.audit(job_id, f"PROMPT:{prompt}", "LLM prompt built", {
         "chars": len(prompt),
         "secs": round(time.monotonic() - prompt_t0, 3),
     })
