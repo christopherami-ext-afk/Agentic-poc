@@ -1,5 +1,5 @@
 from app.jira_client import JiraClient
-from app.llm_ollama import ollama_generate
+from app.llm_gemini import gemini_generate
 from app.templates import build_prompt
 from app.github_git import safe_branch_name, create_branch_and_commit
 
@@ -26,7 +26,7 @@ async def run_agentic_enrichment(issue_key: str) -> dict:
     similar = [f'{i.get("key")} - {i.get("fields", {}).get("summary","")}' for i in issues if i.get("key") != issue_key]
 
     prompt = build_prompt(issue_key, title, description, similar)
-    llm_out = await ollama_generate(prompt)
+    llm_out = await gemini_generate(prompt)
 
     # split JSON and DEV guide
     print("LLM Output:", llm_out)

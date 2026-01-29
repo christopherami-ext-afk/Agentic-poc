@@ -31,6 +31,11 @@ services:
       CONFLUENCE_API_TOKEN: ${CONFLUENCE_API_TOKEN:-}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
       LOCAL_REPO_PATH: /repo
+      
+      # Google Gemini configuration
+      ROHAN-API: ${ROHAN-API:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      GEMINI_TIMEOUT_SECONDS: ${GEMINI_TIMEOUT_SECONDS:-300}
     depends_on:
       - redis
     restart: unless-stopped

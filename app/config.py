@@ -20,10 +20,11 @@ class Settings(BaseModel):
     confluence_email: str = os.getenv("CONFLUENCE_EMAIL", "")
     confluence_api_token: str = os.getenv("CONFLUENCE_API_TOKEN", "")
 
-    ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
-    ollama_model: str = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
-    # Max seconds to wait for the Ollama response (read timeout / overall budget)
-    ollama_timeout_seconds: int = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "300"))
+    # Google Gemini configuration
+    gemini_api_key: str = os.getenv("ROHAN-API", "")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+    # Max seconds to wait for the Gemini response (timeout / overall budget)
+    gemini_timeout_seconds: int = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "300"))
 
     webhook_secret: str = os.getenv("WEBHOOK_SECRET", "")
 
