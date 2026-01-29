@@ -10,7 +10,7 @@ from app.jira_client import JiraClient
 from app.confluence_client import ConfluenceClient
 from app.repo_analyzer import analyze_repo_for_ticket
 from app.templates import build_prompt
-from app.llm_ollama import ollama_generate
+from app.llm_gemini import gemini_generate
 from app.github_git import safe_branch_name, create_branch_and_commit
 from app.github_client import GitHubClient
 from app.kb_writer import write_ticket_pack
@@ -122,30 +122,29 @@ async def run_pipeline(job_id: str, issue_key: str, store: JobStore) -> Dict[str
     })
 
     llm_t0 = time.monotonic()
-    store.audit(job_id, "LLM", "Calling Ollama", {
-        "base_url": settings.ollama_base_url,
-        "model": settings.ollama_model,
-        "timeout_seconds": settings.ollama_timeout_seconds,
+    store.audit(job_id, "LLM", "Calling Gemini", {
+        "model": settings.gemini_model,
+        "timeout_seconds": settings.gemini_timeout_seconds,
     })
 
     try:
         # Add a small buffer to the overall await budget.
-        await_budget = float(settings.ollama_timeout_seconds) + 5.0
-        llm_out = await asyncio.wait_for(ollama_generate(prompt), timeout=await_budget)
+        await_budget = float(settings.gemini_timeout_seconds) + 5.0
+        llm_out = await asyncio.wait_for(gemini_generate(prompt), timeout=await_budget)
     except asyncio.TimeoutError:
-        store.audit(job_id, "LLM", "Ollama call timed out", {
-            "timeout_seconds": float(settings.ollama_timeout_seconds),
+        store.audit(job_id, "LLM", "Gemini call timed out", {
+            "timeout_seconds": float(settings.gemini_timeout_seconds),
             "elapsed_seconds": round(time.monotonic() - llm_t0, 3),
         })
         store.set_status(job_id, "FAILED")
         store.set_result(job_id, {
             "issue_key": issue_key,
             "title": title,
-            "error": "ollama_timeout",
+            "error": "gemini_timeout",
         })
-        return store.get_result(job_id) or {"error": "ollama_timeout"}
+        return store.get_result(job_id) or {"error": "gemini_timeout"}
     except Exception as e:
-        store.audit(job_id, "LLM", "Ollama call failed", {
+        store.audit(job_id, "LLM", "Gemini call failed", {
             "error": str(e)[:2000],
             "elapsed_seconds": round(time.monotonic() - llm_t0, 3),
         })
@@ -153,10 +152,10 @@ async def run_pipeline(job_id: str, issue_key: str, store: JobStore) -> Dict[str
         store.set_result(job_id, {
             "issue_key": issue_key,
             "title": title,
-            "error": "ollama_error",
+            "error": "gemini_error",
             "detail": str(e)[:4000],
         })
-        return store.get_result(job_id) or {"error": "ollama_error"}
+        return store.get_result(job_id) or {"error": "gemini_error"}
 
     store.audit(job_id, "LLM", "LLM generated output", {
         "chars": len(llm_out),
