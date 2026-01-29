@@ -1,6 +1,8 @@
 # app/main.py
 import uuid
 from fastapi import FastAPI, Request, HTTPException
+
+from app.job_store_postgres import JobStorePostgres
 from app.queue import celery_app
 from app.job_store import JobStore
 from app.security import verify_webhook
@@ -9,6 +11,7 @@ from app.config import settings
 app = FastAPI(title="Ticket Enricher Agentic v2")
 
 store = JobStore(settings.job_db_path)
+storePostgres = JobStorePostgres(settings.dsn)
 
 @app.get("/health")
 async def health():
