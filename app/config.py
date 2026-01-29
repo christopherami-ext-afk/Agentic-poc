@@ -22,7 +22,14 @@ class Settings(BaseModel):
 
     ollama_base_url: str = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
     ollama_model: str = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
+    # Max seconds to wait for the Ollama response (read timeout / overall budget)
+    ollama_timeout_seconds: int = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "300"))
 
     webhook_secret: str = os.getenv("WEBHOOK_SECRET", "")
+
+    redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    job_db_path: str = os.getenv("JOB_DB_PATH", "jobs.db")
+    kb_dir: str = os.getenv("KB_DIR", "kb_data")
+
 
 settings = Settings()

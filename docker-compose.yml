@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  celery-worker:
+    build: .
+    command: celery -A app.worker.celery_app worker --loglevel=INFO
+    working_dir: /app
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - "C:/Users/user/OneDrive - Spoon Consulting Ltd/Desktop/ticket-enricher-poc/git_repo_poc/restaurant-ms:/repo"
+    environment:
+      # inside docker: reach redis by service name
+      REDIS_URL: redis://redis:6379/0
+
+      # ensure worker writes to the same sqlite file path (mounted)
+      JOB_DB_PATH: /app/data/jobs.db
+      
+      # If you rely on other env vars (Jira/Confluence/etc), pass them too:
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+      CONFLUENCE_BASE_URL: ${CONFLUENCE_BASE_URL:-}
+      CONFLUENCE_EMAIL: ${CONFLUENCE_EMAIL:-}
+      CONFLUENCE_API_TOKEN: ${CONFLUENCE_API_TOKEN:-}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
+      LOCAL_REPO_PATH: /repo
+    depends_on:
+      - redis
+    restart: unless-stopped

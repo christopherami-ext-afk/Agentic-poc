@@ -1,7 +1,14 @@
+# app/main.py
+import uuid
 from fastapi import FastAPI, Request, HTTPException
-from app.agentic_flow import run_agentic_enrichment
+from app.queue import celery_app
+from app.job_store import JobStore
+from app.security import verify_webhook
+from app.config import settings
 
-app = FastAPI(title="Ticket Enricher Agentic POC")
+app = FastAPI(title="Ticket Enricher Agentic v2")
+
+store = JobStore(settings.job_db_path)
 
 @app.get("/health")
 async def health():
@@ -9,19 +16,38 @@ async def health():
 
 @app.post("/webhooks/jira")
 async def jira_webhook(req: Request):
-    payload = await req.json()
+    print(">>> webhook hit")  # TEMP
+    body = await req.body()
+    #verify_webhook(req.headers, body)
 
-    # Jira webhook payload varies; issue key typically here:
+    payload = await req.json()
     issue = payload.get("issue", {})
     issue_key = issue.get("key")
     if not issue_key:
         raise HTTPException(status_code=400, detail="No issue key found")
 
-    # OPTIONAL: only act on assignee change
-    # For POC we run enrichment for any issue update event
-    result = await run_agentic_enrichment(issue_key)
-    return {"ok": True, "result": result}
+    job_id = str(uuid.uuid4())
+    store.create_job(job_id, issue_key)
+    store.audit(job_id, "QUEUED", "Created job from Jira webhook")
+
+    # enqueue: worker will execute pipeline
+    celery_app.send_task("run_job", args=[job_id, issue_key])
+
+    return {"ok": True, "job_id": job_id, "issue_key": issue_key}
 
 @app.post("/enrich/{issue_key}")
 async def manual_enrich(issue_key: str):
-    return await run_agentic_enrichment(issue_key)
+    print(">>> manual hit")  # TEMP
+    job_id = str(uuid.uuid4())
+    store.create_job(job_id, issue_key)
+    store.audit(job_id, "QUEUED", "Created job from manual request")
+    celery_app.send_task("run_job", args=[job_id, issue_key])
+    return {"ok": True, "job_id": job_id, "issue_key": issue_key}
+
+@app.get("/jobs/{job_id}")
+async def get_job(job_id: str):
+    job = store.get_job(job_id)
+    if not job:
+        raise HTTPException(404, "Job not found")
+    audit = store.get_audit(job_id)
+    return {"job": job, "audit": audit}

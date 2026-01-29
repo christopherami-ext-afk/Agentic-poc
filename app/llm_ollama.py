@@ -10,7 +10,12 @@ async def ollama_generate(prompt: str) -> str:
         "stream": False
     }
 
-    timeout = httpx.Timeout(connect=10.0, read=300.0, write=30.0, pool=10.0)
+    timeout = httpx.Timeout(
+        connect=10.0,
+        read=float(settings.ollama_timeout_seconds),
+        write=30.0,
+        pool=10.0,
+    )
 
     async with httpx.AsyncClient(timeout=timeout) as client:
         r = await client.post(url, json=payload)

@@ -5,3 +5,7 @@ python-dotenv==1.0.1
 pydantic==2.10.2
 GitPython==3.1.43
 streamlit==1.41.1
+celery==5.4.0
+redis==5.0.8
+sqlalchemy==2.0.20
+alembic==1.11.1
