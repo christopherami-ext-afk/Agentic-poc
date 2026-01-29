@@ -30,6 +30,16 @@ class Settings(BaseModel):
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     job_db_path: str = os.getenv("JOB_DB_PATH", "jobs.db")
     kb_dir: str = os.getenv("KB_DIR", "kb_data")
+    postgre_db_con : str = os.getenv("db_conn")
+    db_user : str = os.getenv("db_user")
+    db_pwd : str = os.getenv("db_pwd")
 
+    dsn = (
+        "dbname=postgres "
+        "user=eod "
+        "password=eodtest_ "
+        "host=postgres.defoix.ddns.me "
+        "port=5432"
+    )
 
 settings = Settings()
