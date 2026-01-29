@@ -19,6 +19,7 @@ An agentic POC for ticket enrichment pipeline integrating Jira, Confluence, GitH
    ```
 
 3. Configure environment variables in `.env`:
+   - Copy `.env.example` to `.env`
    - `ROHAN-API`: Your Google Gemini API key
    - `GEMINI_MODEL`: Gemini model to use (default: gemini-1.5-flash)
    - Set up Jira, GitHub, and Confluence credentials as needed
